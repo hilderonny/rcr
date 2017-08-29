@@ -21,3 +21,8 @@ Please follow my blog for updates: https://rc-robot.blogspot.com/
 1. A power source which gan feed the servos with 6V, e.g. [STP3005](https://www.amazon.de/KKmoon-Regulierte-DC-Stromversorgung-Einstellbare-Ausgangsspannung/dp/B01K1S325U/ref=sr_1_1?s=toys&ie=UTF8&qid=1504009497&sr=8-1&keywords=stp3005)
 1. A standard PC as server
 1. Tools, screws, wood
+
+## Arduino part
+
+The arduino part is uses to steer the servo motors for moving the head, see [here](arduino/README.md).
+
