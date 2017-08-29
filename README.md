@@ -26,3 +26,7 @@ Please follow my blog for updates: https://rc-robot.blogspot.com/
 
 The arduino part is uses to steer the servo motors for moving the head, see [here](arduino/README.md).
 
+## Python part
+
+The python part sets up a simple webserver with websocket extension to provide an HTML page
+to the smartphone which renders the camera video streams and which in return sends the smartphone orientation to the arduino, see [here](python/README.md) (sorry, currently only in german).

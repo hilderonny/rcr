@@ -1,0 +1,27 @@
+<html>
+  
+  <head>
+      <script src="static/socket.io.min.js"></script>
+      <script src="static/aframe.min.js"></script>
+      <script src="static/inmoov_stereo.js"></script>
+      <script src="static/aframe-stereo-component.min.js"></script><!--https://github.com/oscarmarinmiro/aframe-stereo-component -->
+  </head>
+  <body>
+    <a-scene>
+      <a-assets>
+        <canvas id="canvas1" width="640" height="480"></canvas>
+        <canvas id="canvas2" width="640" height="480"></canvas>
+      </a-assets>
+      <a-camera id="camera" position="0 0 0" cursor-visible="false" stereocam="eye:right">
+        <!--
+          Im normalen Browser sieht man nix.
+          In der Gear VR wird im internen Browser nur das rechte Auge gerendert.
+          Im Samsung Internet in der Gear VR sieht alles gut aus.
+        -->
+        <a-plane position="0 0 -4" rotation="0 0 0" width="10" height="10" material="shader: flat;src: #canvas1" stereo="eye:left;"></a-plane>
+        <a-plane position="0 0 -4" rotation="0 0 0" width="10" height="10" material="shader: flat;src: #canvas2" stereo="eye:right;"></a-plane>
+      </a-camera>
+    </a-scene>
+  </body>
+</html>
+  
