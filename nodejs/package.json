@@ -1,0 +1,24 @@
+{
+  "name": "rcr",
+  "version": "1.0.0",
+  "description": "Robot control software for RCR",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hilderonny/rcr.git"
+  },
+  "author": "Ronny Hildebrandt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hilderonny/rcr/issues"
+  },
+  "homepage": "https://github.com/hilderonny/rcr#readme",
+  "dependencies": {
+    "express": "^4.15.4",
+    "https": "^1.0.0",
+    "socket.io": "^2.0.3"
+  }
+}
