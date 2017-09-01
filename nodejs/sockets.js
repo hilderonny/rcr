@@ -1,5 +1,4 @@
-//@ts-check
-const WebServer = require('./webserver');
+var WebServer = require('./webserver');
 var socketio = require('socket.io');
 
 /**
@@ -43,12 +42,23 @@ class Sockets {
     }
 
     /**
-     * TODO: Implement and Extract class for message type
-     * @param {SocketIO.Socket} senderSocket 
-     * @param {any} message 
+     * Event is fired when a message was received from a sending socket.
+     * Forwards the message to the receiver or broadcasts it when no receiver is given.
+     * 
+     * @param {SocketIO.Socket} senderSocket Socket wich sent the message
+     * @param {any} message Message to forward or to process
      */
     onMessage(senderSocket, message) {
-
+        message.from = senderSocket.id;
+        if (message.to) {
+            if (this.sockets[message.to]) {
+                this.sockets[message.to].emit('msg', message);
+                console.log(`Sent message "${message.type}" from ${message.from} to ${message.to}`);
+            }
+        } else {
+            this.io.emit('msg', message);
+            console.log(`Sent message "${message.type}" from ${message.from} to all other`);
+        }
     }
 
 }

@@ -1,4 +1,3 @@
-//@ts-check
 var express = require('express');
 var fs = require('fs');
 var http = require('http');
@@ -14,54 +13,53 @@ class WebServer {
 
     /**
      * Creates an instance of the webserver but does not start it. Use start() to get it running.
-     * @param {number} httpPort Port where the HTTP server should listen (e.g. 80)
-     * @param {number} httpsPort Port where the HTTPS server should listen (e.g. 443)
      */
-    constructor(httpPort, httpsPort) {
-        this.httpPort = httpPort;
-        this.httpsPort = httpsPort;
+    constructor() {
         this.app = express();
         this.app.use(express.static(__dirname + '/public'));
         this.httpsServer = https.createServer({ 
             key: fs.readFileSync('./priv.key', 'utf8'), 
             cert: fs.readFileSync('./pub.cert', 'utf8')
         }, this.app);
-        this.httpServer = http.createServer((req, res) => {
-            var indexOfColon = req.headers.host.lastIndexOf(':');
-            var hostWithoutPort = indexOfColon > 0 ? req.headers.host.toString().substring(0, indexOfColon) : req.headers.host;
-            var newUrl = `https://${hostWithoutPort}:${this.httpsPort}${req.url}`;
-            res.writeHead(302, { 'Location': newUrl }); // http://stackoverflow.com/a/4062281
-            res.end();
+        this.httpServer = http.createServer((request, response) => {
+            var indexOfColon = request.headers.host.lastIndexOf(':');
+            var hostWithoutPort = indexOfColon > 0 ? request.headers.host.substring(0, indexOfColon) : request.headers.host;
+            var newUrl = `https://${hostWithoutPort}:${this.httpsPort}${request.url}`;
+            response.writeHead(302, { 'Location': newUrl }); // http://stackoverflow.com/a/4062281
+            response.end();
         });
         this.isRunning = false;
+    }
+
+    internalStart(httpPort, httpsPort) {
+        this.httpPort = httpPort;
+        this.httpsPort = httpsPort;
+        this.httpsServer.listen(httpsPort, () => {
+            console.log(`HTTPS running at port ${httpsPort}.`);
+            this.httpServer.listen(httpPort, () => {
+                console.log(`HTTP running at port ${httpPort}.`);
+                this.isRunning = true;
+            });
+        });
     }
 
     /**
      * Starts the webserver on the ports defined in constructor. When the server is already running,
      * it gets stopped and restarted again (with eventually updated ports)
-     * @returns {Promise<WebServer>} Resolves, when the server started.
+     * 
+     * @param {number} httpPort Port where the HTTP server should listen (e.g. 80)
+     * @param {number} httpsPort Port where the HTTPS server should listen (e.g. 443)
      */
-    start() {
-        var self = this;
-        return new Promise((resolve, reject) => {
-            var internalStart = function() {
-                self.httpsServer.listen(self.httpsPort, () => {
-                    console.log(`HTTPS running at port ${self.httpsPort}.`);
+    start(httpPort, httpsPort) {
+        if (this.isRunning) {
+            this.httpsServer.close(() => {
+                this.httpServer.close(() => {
+                    this.internalStart.call(this, httpPort, httpsPort);
                 });
-                self.httpServer.listen(self.httpPort, function() {
-                    console.log(`HTTP running at port ${self.httpPort}.`);
-                });
-                self.isRunning = true;
-                resolve(self);
-            };
-            if (self.isRunning) {
-                self.httpsServer.close(() => {
-                    self.httpServer.close(internalStart);
-                });
-            } else {
-                internalStart();
-            }
-        });
+            });
+        } else {
+            this.internalStart.call(this, httpPort, httpsPort);
+        }
     }
 
 }

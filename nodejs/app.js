@@ -1,9 +1,8 @@
-//@ts-check
-const WebServer = require('./webserver');
-const Sockets = require('./sockets');
+const WebServer = require('./WebServer');
+const Sockets = require('./Sockets');
 
-var webserver = new WebServer(80, 443);
-var sockets = new Sockets(webserver);
+var webServer = new WebServer();
+var sockets = new Sockets(webServer);
 
-webserver.start();
+webServer.start(80, 443);
 
