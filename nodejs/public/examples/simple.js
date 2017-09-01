@@ -1,4 +1,3 @@
-//@ts-nocheck
 window.addEventListener('load', function() {
     var socket = io();
     
