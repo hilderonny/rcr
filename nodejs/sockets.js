@@ -14,7 +14,6 @@ class Sockets {
     constructor(webServerInstance) {
         this.webServerInstance = webServerInstance;
         this.io = socketio(webServerInstance.httpsServer);
-        this.sockets = {};
         this.io.on('connection', (socket) => { this.onConnection.call(this, socket); }); // Pass correct scope
     }
 
@@ -25,7 +24,7 @@ class Sockets {
      * @param {SocketIO.Socket} socket Socket which just disconnected.
      */
     onDisconnect(socket) {
-        delete this.sockets[socket.id];
+        socket.broadcast.emit('socketDisconnected', socket.id);
         console.log(`Socket ${socket.id} disconnected.`);
     }
 
@@ -35,9 +34,13 @@ class Sockets {
      * @param {SocketIO.Socket} socket Newly created socket from a client
      */
     onConnection(socket) {
-        this.sockets[socket.id] = socket;
         socket.on('disconnect', () => { this.onDisconnect.call(this, socket); });
-        socket.on('msg', (message) => { this.onMessage.call(this, socket, message); });
+        socket.on('message', (message) => { this.onMessage.call(this, socket, message); });
+        // Inform other connected clients about the new socket
+        socket.broadcast.emit('socketConnected', [socket.id]);
+        // Inform the newly connected socket about the already registered sockets
+        var connectedSocketIds = Object.keys(this.io.sockets.sockets).filter((id) => id !== socket.id);
+        socket.emit('socketConnected', connectedSocketIds);
         console.log(`Socket ${socket.id} connected.`);
     }
 
@@ -51,12 +54,12 @@ class Sockets {
     onMessage(senderSocket, message) {
         message.from = senderSocket.id;
         if (message.to) {
-            if (this.sockets[message.to]) {
-                this.sockets[message.to].emit('msg', message);
+            if (this.io.sockets.sockets[message.to]) {
+                this.io.sockets.sockets[message.to].emit('message', message);
                 console.log(`Sent message "${message.type}" from ${message.from} to ${message.to}`);
             }
         } else {
-            this.io.emit('msg', message);
+            senderSocket.broadcast.emit('message', message);
             console.log(`Sent message "${message.type}" from ${message.from} to all other`);
         }
     }
