@@ -30,7 +30,7 @@ window.onload = function() {
 
     comm.on('socketDisconnected', function(socketId) {
         sockets[socketId].tags.forEach(function(tag) {
-            socket.tag.parentNode.removeChild(tag);
+            tag.parentNode.removeChild(tag);
         });
         delete sockets[socketId];
     });

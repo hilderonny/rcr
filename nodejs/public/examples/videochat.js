@@ -1,3 +1,4 @@
+/*
 var sockets = {};
 var rtc = null;
 
@@ -20,6 +21,7 @@ var removeStream = function(socketId, streamId) {
     videoTag.parentNode.removeChild(videoTag);
     delete socket.streams[streamId];
 };
+*/
 
 window.onload = function() {
     /*
@@ -63,22 +65,6 @@ window.onload = function() {
     });
     */
 
-    var comm = new Comm();
-
-    comm.on('socketConnected', function(socketIds) {
-        socketIds.forEach(function(socketId) {
-            var button = document.createElement('button');
-            button.socketId = socketId;
-            button.innerHTML = socketId;
-            button.onclick = function() {
-                rtc.call(button.socketId);
-            };
-            document.getElementById('socketList').appendChild(button);
-            sockets[socketId] = {
-                button: button,
-                streams: {}
-            };
-        });
-    });
+    var rtc = new RTC();
     
 };

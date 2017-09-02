@@ -1,7 +1,11 @@
 if (typeof(EventEmitter) === 'undefined') throw new Error('Class EventEmitter not found. Missed including /js/EventEmitter.js?');
 if (typeof(io) === 'undefined') throw new Error('Socket.io not found. Missed including /socket.io/socket.io.js?');
 
+/**
+ * Communication layer for showing up local ID and remotely connected sockets.
+ */
 function Comm() {
+    
     EventEmitter.call(this);
     
     var self = this;
