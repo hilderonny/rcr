@@ -36,11 +36,12 @@ class Sockets {
     onConnection(socket) {
         socket.on('disconnect', () => { this.onDisconnect.call(this, socket); });
         socket.on('message', (message) => { this.onMessage.call(this, socket, message); });
+        socket.info = { id: socket.id };
         // Inform other connected clients about the new socket
-        socket.broadcast.emit('socketConnected', [socket.id]);
+        socket.broadcast.emit('socketConnected', [socket.info ]);
         // Inform the newly connected socket about the already registered sockets
-        var connectedSocketIds = Object.keys(this.io.sockets.sockets).filter((id) => id !== socket.id);
-        socket.emit('socketConnected', connectedSocketIds);
+        var connectedSockets = Object.keys(this.io.sockets.sockets).filter((id) => id !== socket.id).map((id) => this.io.sockets.sockets[id].info);
+        socket.emit('socketConnected', connectedSockets);
         console.log(`Socket ${socket.id} connected.`);
     }
 
@@ -53,6 +54,17 @@ class Sockets {
      */
     onMessage(senderSocket, message) {
         message.from = senderSocket.id;
+        // Data about a socket, store it in the socket object
+        if (message.type === 'socketInfo') {
+            Object.keys(message.content).forEach((k) => {
+                var info = senderSocket.info[k];
+                if (Array.isArray(info)) {
+                    Array.prototype.push.apply(info, message.content[k]);
+                } else {
+                    senderSocket.info[k] = message.content[k];
+                }
+            });
+        }
         if (message.to) {
             if (this.io.sockets.sockets[message.to]) {
                 this.io.sockets.sockets[message.to].emit('message', message);
