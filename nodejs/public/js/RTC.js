@@ -24,7 +24,7 @@ function RTC(localMediaProperties) {
         var objectUrl = window.URL.createObjectURL(stream);
         self.remoteVideosTags.forEach(function(remoteVideosTag) {
             var video = document.createElement('video');
-            video.setAttribute('autoplay', true);
+            video.setAttribute('autoplay', 'autoplay');
             remoteVideosTag.appendChild(video);
             video.src = objectUrl;
         });
@@ -108,6 +108,8 @@ function RTC(localMediaProperties) {
                     localVideosTag.appendChild(video);
                     video.src = objectUrl;
                 });
+            }, function(error) {
+                // Ignore errors
             });
         });
     });

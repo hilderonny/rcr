@@ -1,70 +1,94 @@
-/*
-var sockets = {};
-var rtc = null;
-
-var addStream = function(socketId, stream) {
-    var socket = sockets[socketId];
-    socket.streams[stream.id] = stream;
-    var videoTag = document.createElement('video');
-    stream.videoTag = videoTag;
-    videoTag.setAttribute('autoplay', 'autoplay');
-    document.getElementById('remoteVideos').appendChild(videoTag);
-    videoTag.src = window.URL.createObjectURL(stream);
-};
-
-var removeStream = function(socketId, streamId) {
-    var socket = sockets[socketId];
-    var stream = socket.streams[streamId];
-    var videoTag = stream.videoTag;
-    videoTag.pause();
-    videoTag.src = '';
-    videoTag.parentNode.removeChild(videoTag);
-    delete socket.streams[streamId];
-};
-*/
-
 window.onload = function() {
-    /*
-    rtc = new WebRTC({ audio: true, video: true}, true);
-    
-    rtc.on('connect', function(socket) {
-        document.getElementById('localId').innerText = socket.id;
+
+    var rtc = new WebRTC({ audio: true, video: true}, true);
+
+    var localIdTags = document.querySelectorAll('localId');
+    var remoteClientButtonsTags = document.querySelectorAll('remoteClientButtons');
+    var localVideosTags = document.querySelectorAll('localVideos');
+    var remoteVideosTags = document.querySelectorAll('remoteVideos');
+
+    var remoteClients = {};
+
+    rtc.on('clientList', function(newClientList) {
+        Object.keys(remoteClients).forEach((key) => {
+            delete remoteClients[key];
+        });
+        Object.keys(newClientList).forEach(function(clientId) {
+            var client = newClientList[clientId];
+            $scope.addClient(client);
+        });
+    }).on('socketConnected', function(socketIds) {
+        addClient(socketIds);
+    }).on('socketDisconnected', function(socketId) {
+        removeClient(socketId);
+    }).on('clientChanged', function(changedClient) {
+        var client = $scope.remoteClients[changedClient.id];
+        if (!client) return;
+        client.name = changedClient.name;
+        $scope.$apply();
+    }).on('localStream', function(localStream) {
+        $scope.localVideoStreamUrl = window.URL.createObjectURL(localStream);
+        document.getElementById('localVideoTag').src = $scope.localVideoStreamUrl;
+    }).on('remoteStream', function(event) {
+        var client = $scope.remoteClients[event.connection.remoteClientId];
+        if (!client) return;
+        client.remoteVideo = window.URL.createObjectURL(event.stream);
+        $scope.$apply();
+    }).on('clientThumbnail', function(changedClient) {
+        var client = $scope.remoteClients[changedClient.id];
+        if (!client) return;
+        client.thumbnail = changedClient.thumbnail;
+        $scope.$apply();
+    }).on('incomingCallAccepted', function(connection) {
+        var remoteClient = $scope.remoteClients[connection.remoteClientId];
+        if (!remoteClient) return;
+        remoteClient.isInCall = true;
+        remoteClient.currentConnection = connection;
+        $scope.$apply();
+    }).on('connectionClosed', function(connection) {
+        var remoteClient = $scope.remoteClients[connection.remoteClientId];
+        if (!remoteClient) return;
+        remoteClient.isInCall = false;
+        $scope.$apply();
     });
 
-    rtc.on('socketConnected', function(socketIds) {
-        socketIds.forEach(function(socketId) {
+    var addClient = function(socketIds) {
+        remoteClients[client.id] = client;
+        remoteClientButtonsTags.forEach(function(remoteClientButtonsTag) {
             var button = document.createElement('button');
             button.socketId = socketId;
             button.innerHTML = socketId;
-            button.onclick = function() {
-                rtc.call(button.socketId);
-            };
-            document.getElementById('socketList').appendChild(button);
-            sockets[socketId] = {
-                button: button,
-                streams: {}
-            };
+            button.addEventListener('click', function() {
+                self.connectToClient(button.socketId);
+                button.classList.add('active');
+            });
+            remoteClientButtonsTag.appendChild(button);
+            socket.tags.push(button);
         });
-    });
+};
 
-    rtc.on('socketDisconnected', function(socketId) {
-        var socket = sockets[socketId];
-        socket.button.parentNode.removeChild(socket.button);
-        Object.keys(socket.streams).forEach(function(streamId) {
-            removeStream(socketId, streamId);
-        });
-        delete sockets[socketId];
-    });
+    var removeClient = function(clientId) {
+        delete remoteClients[clientId];
+    };
 
-    rtc.on('localStream', function(localStream) {
-        document.getElementById('localVideo').src = window.URL.createObjectURL(localStream);
-    });
+    $scope.updateLocalName = function() {
+        localStorage.setItem('LocalClientName', $scope.localClientName);
+        $scope.rtc.setLocalClientName($scope.localClientName);
+    };
 
-    rtc.on('remoteStream', function(event) {
-        addStream(event.connection.remoteSocketId, event.stream);
-    });
-    */
+    $scope.callRemoteClient = function(remoteClient) {
+        remoteClient.isInCall = true;
+        remoteClient.currentConnection = $scope.rtc.call(remoteClient.id);
+    };
 
-    var rtc = new RTC();
+    $scope.endCall = function(remoteClient) {
+        if (!remoteClient.currentConnection) return;
+        remoteClient.currentConnection.close();
+        remoteClient.isInCall = false;
+    };
     
+
+    $scope.localClientName = localStorage.getItem('LocalClientName');
+    $scope.rtc.setLocalClientName($scope.localClientName);
+
 };
