@@ -7,6 +7,8 @@ window.onload = function() {
     var localVideosTags = document.querySelectorAll('localVideos');
     var remoteVideosTags = document.querySelectorAll('remoteVideos');
 
+    var localVideoStreamUrl;
+
     var remoteClients = {};
 
     rtc.on('clientList', function(newClientList) {
@@ -15,41 +17,38 @@ window.onload = function() {
         });
         Object.keys(newClientList).forEach(function(clientId) {
             var client = newClientList[clientId];
-            $scope.addClient(client);
+            addClient(client);
         });
     }).on('socketConnected', function(socketIds) {
         addClient(socketIds);
     }).on('socketDisconnected', function(socketId) {
         removeClient(socketId);
     }).on('clientChanged', function(changedClient) {
-        var client = $scope.remoteClients[changedClient.id];
+        var client = remoteClients[changedClient.id];
         if (!client) return;
         client.name = changedClient.name;
-        $scope.$apply();
     }).on('localStream', function(localStream) {
-        $scope.localVideoStreamUrl = window.URL.createObjectURL(localStream);
-        document.getElementById('localVideoTag').src = $scope.localVideoStreamUrl;
+        localVideoStreamUrl = window.URL.createObjectURL(localStream);
+        localVideosTags.forEach(function(localVideoTag) {
+            localVideoTag.src = localVideoStreamUrl;
+        });
     }).on('remoteStream', function(event) {
-        var client = $scope.remoteClients[event.connection.remoteClientId];
+        var client = remoteClients[event.connection.remoteClientId];
         if (!client) return;
         client.remoteVideo = window.URL.createObjectURL(event.stream);
-        $scope.$apply();
     }).on('clientThumbnail', function(changedClient) {
-        var client = $scope.remoteClients[changedClient.id];
+        var client = remoteClients[changedClient.id];
         if (!client) return;
         client.thumbnail = changedClient.thumbnail;
-        $scope.$apply();
     }).on('incomingCallAccepted', function(connection) {
-        var remoteClient = $scope.remoteClients[connection.remoteClientId];
+        var remoteClient = remoteClients[connection.remoteClientId];
         if (!remoteClient) return;
         remoteClient.isInCall = true;
         remoteClient.currentConnection = connection;
-        $scope.$apply();
     }).on('connectionClosed', function(connection) {
-        var remoteClient = $scope.remoteClients[connection.remoteClientId];
+        var remoteClient = remoteClients[connection.remoteClientId];
         if (!remoteClient) return;
         remoteClient.isInCall = false;
-        $scope.$apply();
     });
 
     var addClient = function(socketIds) {
@@ -59,7 +58,9 @@ window.onload = function() {
             button.socketId = socketId;
             button.innerHTML = socketId;
             button.addEventListener('click', function() {
-                self.connectToClient(button.socketId);
+                remoteClient.isInCall = true;
+                remoteClient.currentConnection = $scope.rtc.call(remoteClient.id);
+                        self.connectToClient(button.socketId);
                 button.classList.add('active');
             });
             remoteClientButtonsTag.appendChild(button);
@@ -71,24 +72,24 @@ window.onload = function() {
         delete remoteClients[clientId];
     };
 
-    $scope.updateLocalName = function() {
-        localStorage.setItem('LocalClientName', $scope.localClientName);
-        $scope.rtc.setLocalClientName($scope.localClientName);
+    updateLocalName = function() {
+        localStorage.setItem('LocalClientName', localClientName);
+        rtc.setLocalClientName(localClientName);
     };
 
-    $scope.callRemoteClient = function(remoteClient) {
+    callRemoteClient = function(remoteClient) {
         remoteClient.isInCall = true;
-        remoteClient.currentConnection = $scope.rtc.call(remoteClient.id);
+        remoteClient.currentConnection = rtc.call(remoteClient.id);
     };
 
-    $scope.endCall = function(remoteClient) {
+    endCall = function(remoteClient) {
         if (!remoteClient.currentConnection) return;
         remoteClient.currentConnection.close();
         remoteClient.isInCall = false;
     };
     
 
-    $scope.localClientName = localStorage.getItem('LocalClientName');
-    $scope.rtc.setLocalClientName($scope.localClientName);
+    localClientName = localStorage.getItem('LocalClientName');
+    rtc.setLocalClientName(localClientName);
 
 };

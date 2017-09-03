@@ -29,6 +29,15 @@ function Comm() {
     
     // Triggered when a message was received from the server (or from another socket)
     self.socket.on('message', function(message) {
-        self.emit('message', message);
+        self.emit(message.type, message);
     });
+
+    /**
+     * Sends a message of a given type and content to another socket (or to all, when targetSocketId is null)
+     */
+    self.send = function(type, content, targetSocketId) {
+        var message = { type: type, content: content };
+        if (targetSocketId) message.to = targetSocketId;
+        self.socket.emit('message', message);
+    };
 }
