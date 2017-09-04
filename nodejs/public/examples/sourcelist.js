@@ -19,7 +19,15 @@ function SourceList() {
         var localMediaProperties = { audio: true, video: true };
         navigator.mediaDevices.enumerateDevices().then(function(devices) {
             var videoDevices = devices.filter(function(d) { return d.kind === 'videoinput' });
-            self.send('socketInfo', { devices: videoDevices });
+            videoDevices.forEach(function(device) {
+                localMediaProperties.video = { deviceId: { exact: device.deviceId } };
+                navigator.mediaDevices.getUserMedia(localMediaProperties).then(function(stream) {
+                    device.stream = stream;
+                }, function(error) {
+                    // Ignore errors
+                });
+            });
+            self.send('socketInfoUpdate', { devices: videoDevices });
         });
     });
 
@@ -32,48 +40,36 @@ function SourceList() {
         });
     };
 
-    // When a remote socket connected or we get an initial list of sockets, show a div for it
-    self.on('socketConnected', function(socketInfos) {
-        socketInfos.forEach(function(socketInfo) {
-            socketInfo.tags = []; // tag contains a reference to the dom elements representing the socket
-            self.remoteSocketInfos[socketInfo.id] = socketInfo;
-            self.clientListTags.forEach(function(t) {
-                var clientTag = document.createElement('client');
-                clientTag.socketInfo = socketInfo;
-                clientTag.innerHTML = '<label>' + socketInfo.id + '</label>';
-                var sourcesTag = document.createElement('sources');
-                clientTag.appendChild(sourcesTag);
-                t.appendChild(clientTag);
-                socketInfo.tags.push(clientTag);
-                if (socketInfo.devices) self.handleDevices(sourcesTag, socketInfo.devices);
-            });
-        });
-    });
-
-    // When a remote socket diconnected, remove all DOM elements for it
-    self.on('socketDisconnected', function(socketId) {
+    self.removeRemoteSocket = function(socketId) {
+        if (!self.remoteSocketInfos[socketId]) return;
         self.remoteSocketInfos[socketId].tags.forEach(function(tag) {
             tag.parentNode.removeChild(tag);
         });
         delete self.remoteSocketInfos[socketId];
+
+    }
+
+    // When a remote socket connected or we get an initial list of sockets, show a div for it
+    self.on('socketInfo', function(message) {
+        var socketInfo = message.content;
+        console.log(socketInfo);
+        self.removeRemoteSocket(socketInfo.id);
+        socketInfo.tags = []; // tag contains a reference to the dom elements representing the socket
+        self.remoteSocketInfos[socketInfo.id] = socketInfo;
+        self.clientListTags.forEach(function(t) {
+            var clientTag = document.createElement('client');
+            clientTag.socketInfo = socketInfo;
+            clientTag.innerHTML = '<label>' + socketInfo.id + '</label>';
+            var sourcesTag = document.createElement('sources');
+            clientTag.appendChild(sourcesTag);
+            t.appendChild(clientTag);
+            socketInfo.tags.push(clientTag);
+            if (socketInfo.devices) self.handleDevices(sourcesTag, socketInfo.devices);
+        });
     });
 
-    // When a remote client sent information about a video input device
-    self.on('socketInfo', function(message) {
-        console.log(message);
-        var remoteSocketInfo = self.remoteSocketInfos[message.from];
-        // TODO: Weiter hier
-        /*
-        var remoteSocketInfo = self.remoteSocketInfos[message.from];
-        self.handleSocketInfos(message.content);
-        if (!remoteSocketInfo) return;
-        remoteSocketInfo.tags.forEach(function(t) {
-            var sourceTag = document.createElement('source');
-            sourceTag.device = message.content;
-            sourceTag.innerHTML = message.content.label;
-            t.appendChild(sourceTag);
-        });*/
-    });
+    // When a remote socket diconnected, remove all DOM elements for it
+    self.on('socketDisconnected', self.removeRemoteSocket);
     
 }
 

@@ -29,6 +29,15 @@ class Sockets {
     }
 
     /**
+     * Sends information about a socket to all other sockets
+     * @param {any} senderSocket Socket with data to send
+     */
+    emitSocketInfo(senderSocket) {
+        var message = { type: 'socketInfo', content: senderSocket.info, from: senderSocket.id }
+        senderSocket.broadcast.emit('message', message);
+    }
+
+    /**
      * Event is triggered, when a client connects to the server.
      * Remembers the connection in the pool and attachs event handlers to the socket.
      * @param {SocketIO.Socket} socket Newly created socket from a client
@@ -38,10 +47,11 @@ class Sockets {
         socket.on('message', (message) => { this.onMessage.call(this, socket, message); });
         socket.info = { id: socket.id };
         // Inform other connected clients about the new socket
-        socket.broadcast.emit('socketConnected', [socket.info ]);
+        socket.broadcast.emit('socketInfo', socket.info);
         // Inform the newly connected socket about the already registered sockets
-        var connectedSockets = Object.keys(this.io.sockets.sockets).filter((id) => id !== socket.id).map((id) => this.io.sockets.sockets[id].info);
-        socket.emit('socketConnected', connectedSockets);
+        Object.keys(this.io.sockets.sockets).filter((id) => id !== socket.id).forEach((id) => {
+            this.emitSocketInfo(this.io.sockets.sockets[id]);
+        });
         console.log(`Socket ${socket.id} connected.`);
     }
 
@@ -55,7 +65,7 @@ class Sockets {
     onMessage(senderSocket, message) {
         message.from = senderSocket.id;
         // Data about a socket, store it in the socket object
-        if (message.type === 'socketInfo') {
+        if (message.type === 'socketInfoUpdate') {
             Object.keys(message.content).forEach((k) => {
                 var info = senderSocket.info[k];
                 if (Array.isArray(info)) {
@@ -64,8 +74,10 @@ class Sockets {
                     senderSocket.info[k] = message.content[k];
                 }
             });
-        }
-        if (message.to) {
+            // Inform other sockets about full updated socket data
+            this.emitSocketInfo(senderSocket);
+            console.log(`Broadcasted updated socket info from ${message.from}`);
+        } else if (message.to) {
             if (this.io.sockets.sockets[message.to]) {
                 this.io.sockets.sockets[message.to].emit('message', message);
                 console.log(`Sent message "${message.type}" from ${message.from} to ${message.to}`);
