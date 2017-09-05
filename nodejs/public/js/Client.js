@@ -1,3 +1,5 @@
+if (typeof(io) === 'undefined') throw new Error('Socket.io not found. Missed including /socket.io/socket.io.js?');
+
 function Client() {
 
     var self = this;
@@ -5,6 +7,13 @@ function Client() {
     self.deviceList = [];
     self.eventHandlers = {};
     self.serverConnection = null;
+    self.directConnections = {};
+
+    self.connectToDevice = function(device) {
+        var directConnection = new DirectConnection();
+        self.directConnections[directConnection.id] = directConnection;
+        directConnection.connectToDevice(self, device);
+    };
 
     self.connectToServer = function() {
         self.serverConnection = io();
@@ -24,13 +33,27 @@ function Client() {
         });
     };
 
+    self.handleAcceptConnectionToDevice = function(message) {
+        var directConnection = self.directConnections[message.content.connectionId];
+        directConnection.handleAnswer(message.content.answer);
+    };
+    
     self.handleDeviceList = function(deviceList) {
         self.deviceList = deviceList;
         self.emit('deviceList', deviceList);
     };
 
     self.handleMessage = function(message) {
+        switch (message.type) {
+            case 'acceptConnectionToDevice': self.handleAcceptConnectionToDevice(message); break;
+            case 'requestConnectionToDevice': self.handleRequestConnectionToDevice(message); break;
+        }
+    };
 
+    self.handleRequestConnectionToDevice = function(message) {
+        var directConnection = new DirectConnection();
+        self.directConnections[directConnection.id] = directConnection;
+        directConnection.acceptIncomingConnection(self, message.from, message.content.connectionId, message.content.deviceId, message.content.offer);
     };
 
     self.on = function(eventName, callback) {
@@ -43,6 +66,15 @@ function Client() {
 
     self.registerDevice = function(device) {
         self.serverConnection.emit('registerDevice', device);
+    };
+
+    self.sendMessage = function(targetSocketId, messageType, messageContent) {
+        var message = {
+            to: targetSocketId,
+            type: messageType,
+            content: messageContent
+        };
+        self.serverConnection.emit('message', message);
     };
 
     self.connectToServer();

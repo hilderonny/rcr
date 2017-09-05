@@ -13,6 +13,10 @@ angular.module('sourcelist', []).controller('SourceListController', function($sc
         $scope.$apply();
     });
 
-    $scope.selectedDevice = { data:null };
+    $scope.selectedDevice = { device: null };
+
+    $scope.connectToDevice = function(device) {
+        $scope.client.connectToDevice(device);
+    };
     
 });

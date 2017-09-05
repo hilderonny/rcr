@@ -5,6 +5,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="/js/Client.js"></script>
+        <script src="/js/DirectConnection.js"></script>
         <script src="sourcelist.js"></script>
     </head>
     <body ng-controller="SourceListController">
@@ -12,12 +13,13 @@
         <div ng-repeat="device in client.deviceList | orderBy:'socketId'">
             <label>
                 <img ng-src="/icons/{{iconMap[device.kind]}}"/>
-                <input type="radio" name="device" ng-model="selectedDevice.data" ng-value="device"/>
+                <input type="radio" name="device" ng-model="selectedDevice.device" ng-value="device"/>
                 {{device.label}}
             </label>
         </div>
         <h1>Device details</h1>
-        <pre>{{ selectedDevice.data | json }}</pre>
+        <pre>{{ selectedDevice.device | json }}</pre>
+        <button ng-click="connectToDevice(selectedDevice.device)">Connect to {{ selectedDevice.device.label }}</button>
         <footer><a href="https://icons8.com/">Icons are from Icons8</a></footer>
     </body>
 </html>
