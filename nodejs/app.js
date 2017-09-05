@@ -1,8 +1,3 @@
-const WebServer = require('./WebServer');
-const Sockets = require('./Sockets');
+var Server = require('./server/Server');
 
-var webServer = new WebServer();
-var sockets = new Sockets(webServer);
-
-webServer.start(80, 443);
-
+new Server().start(80, 443);
