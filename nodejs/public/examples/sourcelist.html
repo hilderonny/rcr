@@ -8,8 +8,16 @@
         <script src="sourcelist.js"></script>
     </head>
     <body ng-controller="SourceListController">
-        <ul>
-            <li ng-repeat="device in client.remoteDevices">{{device.label}}</li>
-        </ul>
+        <h1>List of devices</h1>
+        <div ng-repeat="device in client.deviceList | orderBy:'socketId'">
+            <label>
+                <img ng-src="/icons/{{iconMap[device.kind]}}"/>
+                <input type="radio" name="device" ng-model="selectedDevice.data" ng-value="device"/>
+                {{device.label}}
+            </label>
+        </div>
+        <h1>Device details</h1>
+        <pre>{{ selectedDevice.data | json }}</pre>
+        <footer><a href="https://icons8.com/">Icons are from Icons8</a></footer>
     </body>
 </html>

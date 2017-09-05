@@ -2,7 +2,7 @@ function Client() {
 
     var self = this;
 
-    self.remoteDevices = [];
+    self.deviceList = [];
     self.eventHandlers = {};
     self.serverConnection = null;
 
@@ -25,7 +25,8 @@ function Client() {
     };
 
     self.handleDeviceList = function(deviceList) {
-        self.remoteDevices = deviceList;
+        self.deviceList = deviceList;
+        self.emit('deviceList', deviceList);
     };
 
     self.handleMessage = function(message) {
