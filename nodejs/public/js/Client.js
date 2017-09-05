@@ -43,9 +43,15 @@ function Client() {
         self.emit('deviceList', deviceList);
     };
 
+    self.handleInformAboutIceCandidate = function(message) {
+        var directConnection = self.directConnections[message.content.connectionId];
+        directConnection.handleRemoteIceCandidate(message.content.candidate);
+    };
+
     self.handleMessage = function(message) {
         switch (message.type) {
             case 'acceptConnectionToDevice': self.handleAcceptConnectionToDevice(message); break;
+            case 'informAboutIceCandidate': self.handleInformAboutIceCandidate(message); break;
             case 'requestConnectionToDevice': self.handleRequestConnectionToDevice(message); break;
         }
     };

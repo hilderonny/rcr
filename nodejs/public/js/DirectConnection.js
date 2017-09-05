@@ -19,9 +19,20 @@ function DirectConnection() {
         videoElement.play();
     };
 
+    self.handleLocalIceCandidate = function(client, socketId, event) {
+        console.log(event);
+        client.sendMessage(socketId, 'informAboutIceCandidate', { connectionId: self.id, candidate: event.candidate });
+    };
+
+    self.handleRemoteIceCandidate = function(candidate) {
+        console.log(candidate);
+        self.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    };
+
     self.connectToDevice = function(client, device) {
         self.peerConnection = new RTCPeerConnection();
         self.peerConnection.onaddstream = self.handleAddStream;
+        self.peerConnection.onicecandidate = function(event) { self.handleLocalIceCandidate(client, device.socketId, event); };
         var offer;
         self.peerConnection.createOffer().then(function(o) {
             offer = o;
@@ -38,6 +49,8 @@ function DirectConnection() {
 
     self.acceptIncomingConnection = function(client, sourceSocketId, sourceConnectionId, deviceId, offer) {
         self.peerConnection = new RTCPeerConnection();
+        self.peerConnection.onaddstream = self.handleAddStream;
+        self.peerConnection.onicecandidate = function(event) { self.handleLocalIceCandidate(client, sourceSocketId, event); };
         var answer;
         var constraints = {
             audio: true,
@@ -63,6 +76,8 @@ function DirectConnection() {
     self.handleAnswer = function(answer) {
         self.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
     };
+
+    // TODO: ICE Kandidaten austauschen
 
     self.id = new Date().getTime().toString();
 }
