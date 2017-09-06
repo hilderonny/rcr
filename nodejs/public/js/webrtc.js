@@ -25,7 +25,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
             if (self.isClosed) return;
             self.isClosed = true;
             self.peerConnection.close();
-            self.socket.emit('Message', {
+            self.socket.emit('message', {
                 to: self.remoteClientId,
                 type: 'WebRTCclose',
                 content: self.id
@@ -52,7 +52,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
         self.sendOffer = function(done) {
             self.peerConnection.createOffer().then(function(localSessionDescription) {
                 self.peerConnection.setLocalDescription(localSessionDescription);
-                self.socket.emit('Message', {
+                self.socket.emit('message', {
                     to: self.remoteClientId,
                     type: 'WebRTCcall',
                     content: {
@@ -71,7 +71,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
         self.accept = function(done) {
             self.peerConnection.createAnswer().then(function(localSessionDescription) {
                 self.peerConnection.setLocalDescription(localSessionDescription);
-                self.socket.emit('Message', {
+                self.socket.emit('message', {
                     to: self.remoteClientId,
                     type: 'WebRTCaccept',
                     content: { connectionId: self.id, sessionDescription: localSessionDescription }
@@ -83,7 +83,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
         // Lehnt die eingehende Verbindung ab und schließt diese
         self.reject = function(done) {
             self.close();
-            self.socket.emit('Message', {
+            self.socket.emit('message', {
                 to: self.remoteClientId,
                 type: 'WebRTCreject',
                 content: self.id
@@ -93,7 +93,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
         // Wenn lokaler ICE Kandidat erkannt wurde wird dieser an die Gegenstelle geschickt
         self.peerConnection.onicecandidate = function(event) {
             if (event.candidate) {
-                self.socket.emit('Message', {
+                self.socket.emit('message', {
                     to: self.remoteClientId,
                     type: 'WebRTCiceCandidate',
                     content: { connectionId: self.id, remoteIceCandidateDescription: event.candidate }
@@ -280,7 +280,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
          * Schickt den Namen als neuen Namen des lokalen Clients an den Server
          */
         self.setLocalClientName = function(newLocalClientName) {
-            self.socket.emit('Message', {
+            self.socket.emit('message', {
                 type: 'WebRTCclientName',
                 content: newLocalClientName
             });
@@ -420,7 +420,8 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
         };
     
         // Socket-Nachrichten behandeln
-        self.socket.on('Message', function(message) {
+        self.socket.on('message', function(message) {
+            console.log(message);
             switch(message.type) {
                 case 'WebRTCclientConnected': self.addRemoteClient(message.content); break;
                 case 'WebRTCclientDisconnected': self.removeRemoteClient(message.content); break;
@@ -454,7 +455,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
             // Send local event
             self.sendEvent('localThumbnail', imageDataUrl);
             // Send Thumbnail to other Clients
-            self.socket.emit('Message', {
+            self.socket.emit('message', {
                 type: 'WebRTCthumbnail',
                 content: imageDataUrl
             });

@@ -17,6 +17,7 @@ class WebServer {
     constructor() {
         this.app = express();
         this.app.use(express.static(__dirname + '/../public')); // web pages and javascripts
+        this.app.use('/node_modules', express.static(__dirname + '/../node_modules')); // web pages and javascripts
         this.httpsServer = https.createServer({ 
             key: fs.readFileSync('./priv.key', 'utf8'), 
             cert: fs.readFileSync('./pub.cert', 'utf8')
