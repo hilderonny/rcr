@@ -1,25 +1,53 @@
 <!DOCTYPE html>
-<html ng-app="sourcelist">
+<html ng-app="app">
     <head>
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+        <link rel="stylesheet" href="/node_modules/angular-material/angular-material.css">
+        <link rel="stylesheet" href="sourcelist.css">
         <script src="/socket.io/socket.io.js"></script>
-        <script src="/js/Client.js"></script>
-        <script src="/js/DirectConnection.js"></script>
+        <script src="/node_modules/angular/angular.js"></script>
+        <script src="/node_modules/angular-aria/angular-aria.js"></script>
+        <script src="/node_modules/angular-animate/angular-animate.js"></script>
+        <script src="/node_modules/angular-material/angular-material.js"></script>
+        <script src="/node_modules/angular-messages/angular-messages.js"></script>
+        <script src="/js/adapter.js"></script>
+        <script src="/js/webrtc.js"></script>
         <script src="sourcelist.js"></script>
     </head>
-    <body ng-controller="SourceListController">
-        <h1>List of devices</h1>
-        <div ng-repeat="device in client.deviceList | orderBy:'socketId'">
-            <label>
-                <img ng-src="/icons/{{iconMap[device.kind]}}"/>
-                <input type="radio" name="device" ng-model="selectedDevice.device" ng-value="device"/>
-                {{device.label}}
-            </label>
-        </div>
-        <h1>Device details</h1>
-        <pre>{{ selectedDevice.device | json }}</pre>
-        <button ng-click="connectToDevice(selectedDevice.device)">Connect to {{ selectedDevice.device.label }}</button>
-        <footer><a href="https://icons8.com/">Icons are from Icons8</a></footer>
+	<body ng-controller="MainController" ng-cloak layout="column">
+
+
+        <md-toolbar layout="row" class="md-toolbar-tools">
+            <span flex></span>
+            <input ng-model="localClientName" ng-change="updateLocalName()" placeholder="Name">
+            <video id="localVideoTag" autoplay></video>
+            <div id="localVideos"></div>
+        </md-toolbar>
+
+        <md-content flex layout="row">
+
+            <div>
+
+                <md-card class="md-raised" ng-repeat="remoteClient in remoteClients" ng-class="{isInCall: remoteClient.isInCall}" aria-label="CLIENT">
+                    <img data-ng-src="{{remoteClient.thumbnail}}" class="md-card-image" ng-if="!remoteClient.isInCall" />
+                    <video autoplay class="md-card-image" ng-if="remoteClient.isInCall" ng-src="{{remoteClient.remoteVideo | trustUrl}}"></video>
+                    <md-card-title>
+                        <md-card-title-text>
+                            <span class="md-headline" ng-bind="remoteClient.name"></span>
+                        </md-card-title-text>
+                    </md-card-title>
+                    <md-card-actions layout="row" layout-align="center center">
+                        <md-button class="md-raised md-primary" ng-if="!remoteClient.isInCall" ng-click="callRemoteClient(remoteClient)">Anrufen</md-button>
+                        <md-button class="md-raised md-warn" ng-if="remoteClient.isInCall" ng-click="endCall(remoteClient)">Auflegen</md-button>
+                    </md-card-actions>
+                </md-card>
+
+            </div>
+
+        </md-list>
+
+
+        </md-content>
+
     </body>
 </html>
