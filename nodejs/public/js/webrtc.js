@@ -486,6 +486,7 @@ function WebRTC(localMediaProperties, autoAcceptIncomingCall) {
         // Thumbnails vorbereiten und starten
         self.videoTagForThumbnail = document.createElement('video');
         self.videoTagForThumbnail.setAttribute('autoplay', 'autoplay');
+        self.videoTagForThumbnail.setAttribute('muted', 'muted');
         self.videoTagForThumbnail.src = window.URL.createObjectURL(stream);
         setInterval(self.createThumbnail, 5000);
         self.createThumbnail();
