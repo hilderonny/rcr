@@ -56,8 +56,6 @@ function initWebCam(mediaDeviceInfo, localVideoTag) {
 
     rtc = new WebRTC({ audio: false, video: { deviceId: { exact: mediaDeviceInfo.deviceId } } }, true);
 
-    console.log(rtc);
-    
     rtc.on('clientList', function(newClientList) {
         var clientListDiv = document.getElementById('clientList');
         while (clientListDiv.lastChild) clientListDiv.removeChild(clientListDiv.lastChild);

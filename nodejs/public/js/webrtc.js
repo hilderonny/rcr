@@ -9,7 +9,21 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
     // Eindeutige IDs, um mehrfache Verbindungen zu einem Client zu unterscheiden 
     self.id = remoteClientId + (new Date()).getTime();
 
-    self.peerConnection = new RTCPeerConnection(null);
+    // STUN-Server für UDP hole punching, siehe https://www.html5rocks.com/en/tutorials/webrtc/infrastructure/, https://stackoverflow.com/a/20134888/5964970
+    var configuration = {
+        'iceServers': [
+            { urls: [
+                'stun:stun.l.google.com:19302',
+                'stun:stun1.l.google.com:19302',
+                'stun:stun2.l.google.com:19302',
+                'stun:stun3.l.google.com:19302',
+                'stun:stun4.l.google.com:19302',
+                'stun:stunserver.org'
+            ] }
+        ]
+    };
+      
+    self.peerConnection = new RTCPeerConnection(configuration);
 
     /**
      * Lokalen Videostream festlegen
@@ -52,6 +66,7 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
     self.sendOffer = function(done) {
         self.peerConnection.createOffer().then(function(localSessionDescription) {
             self.peerConnection.setLocalDescription(localSessionDescription);
+            console.log(localSessionDescription);
             self.socket.emit('Message', {
                 to: self.remoteClientId,
                 type: 'WebRTCcall',
