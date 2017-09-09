@@ -45,11 +45,6 @@ app.controller('MainController', function($scope, $mdMedia) {
     }).on('localStream', function(localStream) {
         $scope.localVideoStreamUrl = window.URL.createObjectURL(localStream);
         document.getElementById('localVideoTag').src = $scope.localVideoStreamUrl;
-        var div = document.getElementById('localVideos');
-        var video = document.createElement('video');
-        div.appendChild(video);
-        video.srcObject = localStream;
-        video.play();
     }).on('remoteStream', function(event) {
         var client = $scope.remoteClients[event.connection.remoteClientId];
         if (!client) return;

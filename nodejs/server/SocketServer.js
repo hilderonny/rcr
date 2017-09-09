@@ -33,12 +33,26 @@ class SocketServer {
         connectedSocket.on('registerDevice', (device) => { this.handleDeviceRegistration.call(this, connectedSocket, device); });
         connectedSocket.on('message', (message) => { this.handleMessage.call(this, connectedSocket, message); });
         this.sendDeviceList(connectedSocket);
-        console.log(`Socket ${connectedSocket.id} connected.`);
+        connectedSocket.broadcast.emit('message', {
+            type: 'WebRTCclientConnected',
+            content: connectedSocket.id
+        });
+        connectedSocket.emit('message', {
+            type: 'WebRTCclientList',
+            content: Object.keys(this.socketIoInstance.sockets.sockets).filter((id) => id !== connectedSocket.id).map((id) => {
+                return { id: id, name: this.socketIoInstance.sockets.sockets[id].name }
+            })
+        });
+            console.log(`Socket ${connectedSocket.id} connected.`);
     }
 
     handleSocketDisconnect(disconnectedSocket) {
         this.deviceList = this.deviceList.filter((d) => d.socketId !== disconnectedSocket.id);
         this.sendDeviceList();
+        disconnectedSocket.broadcast.emit('message', {
+            type: 'WebRTCclientDisconnected',
+            content: disconnectedSocket.id
+        });
         console.log(`Socket ${disconnectedSocket.id} disconnected.`);
     }
 

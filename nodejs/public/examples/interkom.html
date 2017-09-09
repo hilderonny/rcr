@@ -3,7 +3,7 @@
     <head>
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
         <link rel="stylesheet" href="/node_modules/angular-material/angular-material.css">
-        <link rel="stylesheet" href="sourcelist.css">
+        <link rel="stylesheet" href="interkom.css">
         <script src="/socket.io/socket.io.js"></script>
         <script src="/node_modules/angular/angular.js"></script>
         <script src="/node_modules/angular-aria/angular-aria.js"></script>
@@ -12,7 +12,7 @@
         <script src="/node_modules/angular-messages/angular-messages.js"></script>
         <script src="/js/adapter.js"></script>
         <script src="/js/webrtc.js"></script>
-        <script src="sourcelist.js"></script>
+        <script src="interkom.js"></script>
     </head>
 	<body ng-controller="MainController" ng-cloak layout="column">
 
@@ -20,8 +20,7 @@
         <md-toolbar layout="row" class="md-toolbar-tools">
             <span flex></span>
             <input ng-model="localClientName" ng-change="updateLocalName()" placeholder="Name">
-            <video id="localVideoTag" autoplay></video>
-            <div id="localVideos"></div>
+            <video id="localVideoTag" autoplay muted></video>
         </md-toolbar>
 
         <md-content flex layout="row">
