@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/adapter.js"></script>
+        <script src="/js/webrtc.js"></script>
+        <script src="aframe.min.js"></script>
+        <script src="index.js"></script>
+    </head>
+    <body>
+        <a-scene>
+            <a-assets>
+                <video id="video" autoplay muted crossorigin="anonymous"></video>
+            </a-assets>
+            <a-camera id="camera" position="0 0 0" cursor-visible="false">
+                <a-plane position="0 0 -4" rotation="0 0 0" width="10" height="10" material="shader: flat;src: #video"></a-plane>
+            </a-camera>
+        </a-scene>
+    </body>
+</html>

@@ -66,7 +66,6 @@ function WebRTCConnection(socket, remoteClientId, addRemoteStreamCallback) {
     self.sendOffer = function(done) {
         self.peerConnection.createOffer().then(function(localSessionDescription) {
             self.peerConnection.setLocalDescription(localSessionDescription);
-            console.log(localSessionDescription);
             self.socket.emit('Message', {
                 to: self.remoteClientId,
                 type: 'WebRTCcall',

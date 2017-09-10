@@ -1,8 +1,3 @@
-/*
-var Server = require('./server/Server');
-
-new Server().start(80, 443);
-*/
 var express = require('express');
 var fs = require('fs');
 var http = require('http');
@@ -47,6 +42,12 @@ io.on('connection', (socket) => {
             socket.broadcast.emit('Message', message);
             console.log(`Sent message type "${message.type}" from ${message.from} to all other`);
         }
+    });
+    // Movement commands from clients are reditected to the arduino
+    // attached on COM port defined at top
+    socket.on('Move', (movement) => { 
+        console.log(movement);
+        // TODO: Redirect to arduino
     });
     console.log(`Socket ${socket.id} connected.`);
     socket.broadcast.emit('Message', {
