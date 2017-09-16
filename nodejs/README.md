@@ -25,3 +25,7 @@ Now you need to adopt the ports where the server should listen on. On android yo
 * node app.js
 
 You can switch to a browser and input https://127.0.0.1:2443 to open the webserver's content. The server will continue running in the background, even if termux is not in the foreground.
+
+# Steering arduino
+
+For that the Johnny-Five libraries (http://johnny-five.io/) and the StandardFirmataPlus firmware is used.
