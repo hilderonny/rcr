@@ -2,6 +2,9 @@ var five = require("johnny-five");
 var board = new five.Board();
 
 board.on("ready", function() {
-  var led = new five.Led(13);
-  led.blink(500);
+  var servo = new five.Servo({
+    pin: 9,
+    range: [50, 170] // Check the endstops!
+  });
+  servo.sweep();
 });
