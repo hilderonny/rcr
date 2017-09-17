@@ -3,7 +3,7 @@ var board = new five.Board();
 
 board.on("ready", function() {
   var upDownRange = [50, 170];
-  var leftRightRange = [50, 130];
+  var leftRightRange = [10, 170];
   var upDown = new five.Servo({
     pin: 9,
     range: upDownRange,
