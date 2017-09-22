@@ -3,6 +3,7 @@ var fs = require('fs');
 var http = require('http');
 var https = require('https');
 var socketio = require('socket.io');
+var five = require('johnny-five');
 
 // Anwendung initialisieren und Handler-Reihenfolge festlegen
 var app = express();
@@ -20,11 +21,16 @@ var io = socketio(server);
 // Liste verbundener Sockets
 var sockets = {};
 
+var upDownRange = [50, 170];
+var leftRightRange = [10, 170];
+var upDownServo = null;
+var leftRightServo = null;
+
 io.on('connection', (socket) => {
     sockets[socket.id] = socket;
     socket.on('disconnect', () => {
         delete sockets[socket.id];
-        console.log(`Socket ${socket.id} disconnected.`);
+        //console.log(`Socket ${socket.id} disconnected.`);
         socket.broadcast.emit('Message', {
             type: 'WebRTCclientDisconnected',
             content: socket.id
@@ -37,19 +43,19 @@ io.on('connection', (socket) => {
         }
         if (message.to) {
             sockets[message.to].emit('Message', message);
-            console.log(`Sent message type "${message.type}" from ${message.from} to ${message.to}`);
+            //console.log(`Sent message type "${message.type}" from ${message.from} to ${message.to}`);
         } else {
             socket.broadcast.emit('Message', message);
-            console.log(`Sent message type "${message.type}" from ${message.from} to all other`);
+            //console.log(`Sent message type "${message.type}" from ${message.from} to all other`);
         }
     });
     // Movement commands from clients are reditected to the arduino
     // attached on COM port defined at top
     socket.on('Move', (movement) => { 
-        console.log(movement);
-        // TODO: Redirect to arduino
+        if (upDownServo) upDownServo.to(five.Fn.scale(movement.x, -90, 90, upDownRange[0], upDownRange[1]));
+        if (leftRightServo) leftRightServo.to(five.Fn.scale(movement.y, -90, 90, leftRightRange[0], leftRightRange[1]));
     });
-    console.log(`Socket ${socket.id} connected.`);
+    //console.log(`Socket ${socket.id} connected.`);
     socket.broadcast.emit('Message', {
         type: 'WebRTCclientConnected',
         content: socket.id
@@ -59,6 +65,20 @@ io.on('connection', (socket) => {
         content: Object.keys(sockets).filter((id) => id !== socket.id).map((id) => {
             return { id: id, name: sockets[id].name }
         })
+    });
+});
+
+var board = new five.Board();
+board.on('ready', function() {
+    upDownServo = new five.Servo({
+        pin: 9,
+        range: upDownRange,
+        center: true
+    });
+    leftRightServo = new five.Servo({
+        pin: 8,
+        range: leftRightRange,
+        center: true
     });
 });
 
