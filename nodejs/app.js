@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
     // Movement commands from clients are reditected to the arduino
     // attached on COM port defined at top
     socket.on('Move', (movement) => { 
-        if (upDownServo) upDownServo.to(five.Fn.scale(movement.x, -90, 90, upDownRange[0], upDownRange[1]));
+        if (upDownServo) upDownServo.to(five.Fn.scale(movement.x, -45, 45, upDownRange[0], upDownRange[1]));
         if (leftRightServo) leftRightServo.to(five.Fn.scale(movement.y, -90, 90, leftRightRange[0], leftRightRange[1]));
     });
     //console.log(`Socket ${socket.id} connected.`);
@@ -71,12 +71,12 @@ io.on('connection', (socket) => {
 var board = new five.Board();
 board.on('ready', function() {
     upDownServo = new five.Servo({
-        pin: 9,
+        pin: 13,
         range: upDownRange,
         center: true
     });
     leftRightServo = new five.Servo({
-        pin: 8,
+        pin: 12,
         range: leftRightRange,
         center: true
     });
