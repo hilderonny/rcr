@@ -17,7 +17,7 @@ Following the tutorial on https://medium.freecodecamp.org/building-a-node-js-app
 * apt upgrade
 * apt install coreutils nodejs nano mc git
 * git clone https://github.com/hilderonny/rcr.git
-* cd nodejs
+* cd rcr/nodejs
 * npm install
 
 Now you need to adopt the ports where the server should listen on. On android you cannot use the ports 80 and 443. So open the app.js file and replace the ports 443 and 80 with e.g. 2443 and 2080. Now you can start the server with
